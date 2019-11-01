@@ -6,17 +6,17 @@ import (
 	"sync"
 )
 
-func New (x uint16) (CollWG, CollWGP) {
+func New (x uint16) (PvfCollWG, PbfCollWG) {
 	w := &waitGroup {&sync.WaitGroup {}, x, &sync.Mutex {}}
 	w.w.Add (int (x))
 	return w, w
 }
 
-type CollWG  interface {
+type PvfCollWG interface {
 	Wait ()
 }
 
-type CollWGP interface {
+type PbfCollWG interface {
 	Done () (error)
 }
 
