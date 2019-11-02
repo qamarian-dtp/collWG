@@ -1,4 +1,4 @@
-package collWG
+package cwg
 
 import (
 	"fmt"
@@ -10,25 +10,27 @@ import (
 	"time"
 )
 
+// TestCollWG () extensively tests the "collected wait group" data type.
 func TestCollWG (t *testing.T) {
 	str.PrintEtr ("Test started.", "std", "TestCollWG ()")
 
 	// Testing method Done (). --1-- [
 	// | --
 	var waitN uint16 = (1 << 16) - 1
-
-	_, clWGP := New (waitN)
+	var additional uint8 = 4
+	
+	_, pbFace := New (waitN)
 
 	goWG := &sync.WaitGroup {}
-	goWG.Add (int (waitN) + 4)
+	goWG.Add (int (waitN) + int (additional))
 
 	var okys int32 = 0
 	var errs int32 = 0
 	// -- |
 
-	for i := 1; i <= int (waitN) + 4; i = i + 1 {
+	for i := 1; i <= int (waitN) + int (additional); i = i + 1 {
 		go func (j int) {
-			errX := clWGP.Done ()
+			errX := pbFace.Done ()
 			if errX == nil {
 				atomic.AddInt32 (&okys, 1)
 			} else {
@@ -46,11 +48,12 @@ func TestCollWG (t *testing.T) {
 	}
 
 	goWG.Wait ()
+
 	if t.Failed () {
 		str.PrintEtr ("Test failed. Ref: 0", "err", "TestCollWG ()")
 		t.FailNow ()
 	}
-	if okys != int32 (waitN) || errs != 4 {
+	if okys != int32 (waitN) || errs != int32 (additional) {
 		str.PrintEtr ("Test failed. Ref: 1", "err", "TestCollWG ()")
 		t.FailNow ()
 	}
@@ -60,35 +63,39 @@ func TestCollWG (t *testing.T) {
 	// | --
 	var waitN2 uint16 = (1 << 16) - 1
 
-	clWG2, clWGP2 := New (waitN2)
+	pvFace2, pbFace2 := New (waitN2)
 	
 	goWG2 := &sync.WaitGroup {}
 	goWG2.Add (int(waitN2) - 1)
 	
 	done := false
+	doneLock := &sync.Mutex {}
 	// -- |
 	
 	for i := 1; i < int (waitN2); i ++ {
 		go func () {
-			clWGP2.Done ()
+			pbFace2.Done ()
 			goWG2.Done ()
 		} ()
 	}
 	go func () {
 		goWG2.Wait ()
 		time.Sleep (time.Second * 4)
+		doneLock.Lock ()
+		defer doneLock.Unlock ()
 		done = true
-		clWGP2.Done ()
+		pbFace2.Done ()
 	} ()
 		
-	clWG2.Wait ()
+	pvFace2.Wait ()
+
+	doneLock.Lock ()
+	defer doneLock.Unlock ()
 	
 	if done == false {
 		str.PrintEtr ("Test failed. Ref: 2", "err", "TestCollWG ()")
 		t.FailNow ()
 	}
-
-	time.Sleep (time.Second * 1)
 	// --1-- ]	
 
 	str.PrintEtr ("Test passed.", "std", "TestCollWG ()")

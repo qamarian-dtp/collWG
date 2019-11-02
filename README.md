@@ -1,5 +1,5 @@
-# collWG
+# cwg: Collected Wait Group
 
-Package collWG implements a collected wait group.
+Package cwg defines and implements a wait group that is collected.
 
-See __[GoDoc](https://godoc.org/github.com/qamarian-dtp/collWG)__ for details.
+See __[GoDoc](https://godoc.org/github.com/qamarian-dtp/cwg)__ for details.

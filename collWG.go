@@ -1,4 +1,4 @@
-package collWG
+package cwg
 
 import (
 	"fmt"
@@ -6,17 +6,24 @@ import (
 	"sync"
 )
 
+// New () creates a new collected wait group. Argument should be the number of goroutines
+// to wait for.
 func New (x uint16) (PvfCollWG, PbfCollWG) {
 	w := &waitGroup {&sync.WaitGroup {}, x, &sync.Mutex {}}
 	w.w.Add (int (x))
 	return w, w
 }
 
+// PvfCollWG is the private face of the collected wait group.
+// This data is not necessarily thread-safe.
 type PvfCollWG interface {
 	Wait ()
 }
 
+// PvfCollWG is the public face of the collected wait group.
+// This data is thread-safe.
 type PbfCollWG interface {
+	// Possible errors include: ErrDone.
 	Done () (error)
 }
 
@@ -44,6 +51,8 @@ func (w *waitGroup) Done () (e error) {
 	// --1-- [
 	w.l.Lock ()
 	defer w.l.Unlock ()
+	
+	// Checking again, just in case value had become 0, while trying to lock data.
 	if w.x == 0 {
 		return ErrDone
 	}
@@ -51,7 +60,7 @@ func (w *waitGroup) Done () (e error) {
 
 	// --1-- [
 	w.w.Done ()
-	w.x = w.x - 1
+	w.x --
 	// --1-- ]
 	
 	return nil
