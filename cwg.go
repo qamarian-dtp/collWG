@@ -8,7 +8,7 @@ import (
 
 // New () creates a new collected wait group. Argument should be the number of goroutines
 // to wait for.
-func New (x uint16) (PvfCollWG, PbfCollWG) {
+func New (x uint16) (PvfCWG, PbfCWG) {
 	w := &waitGroup {&sync.WaitGroup {}, x, &sync.Mutex {}}
 	w.w.Add (int (x))
 	return w, w
@@ -16,13 +16,13 @@ func New (x uint16) (PvfCollWG, PbfCollWG) {
 
 // PvfCollWG is the private face of the collected wait group.
 // This data is not necessarily thread-safe.
-type PvfCollWG interface {
+type PvfCWG interface {
 	Wait ()
 }
 
 // PvfCollWG is the public face of the collected wait group.
 // This data is thread-safe.
-type PbfCollWG interface {
+type PbfCWG interface {
 	// Possible errors include: ErrDone.
 	Done () (error)
 }
